@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Air Quality Dashboard
 
 ## Getting Started
 
@@ -14,23 +14,24 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Requirements
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+You have 7 days to complete and submit the code. After submission, the team will review, and if the candidate did well schedule an L2. At the L2 interview, the team will go over the submission with the candidate and review.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Application Requirements
 
-## Learn More
+Build a mobile-responsive application that will fetch the Air Quality Index (AQI) scores from one or more free API like the following.
 
-To learn more about Next.js, take a look at the following resources:
+<https://openaq.org/>
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+<https://aqicn.org/>
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+When the application is launched there should be a landing screen.
+After the data is fetched from the API, the AQI should be presented to the user in a clean and concise manner.
+The AQI data fetched should be determined by the user’s location.
+The user latitude and longitude should also be displayed along with the city name and weather station from which the data was fetched.
+Bonus
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Display AQI information for one day prior and one day in the future.
+The user could have the ability to enter another location from which to fetch AQI information.
+Code can be placed in a public GitHub or shared via ZIP, ensure the node_modules is not included
