@@ -18,5 +18,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/aq/${ipInfo.ip}`, request.url));
   }
 
-  return NextResponse.redirect("/404");
+  return NextResponse.redirect(new URL("/404", request.url));
 }
