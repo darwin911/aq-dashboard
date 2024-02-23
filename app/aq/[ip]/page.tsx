@@ -1,10 +1,8 @@
-import Image from "next/image";
-
-export default function Home({}) {
+export default function IpPage({ params }: { params: { ip: string } }) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div>
-        IP: <span>{}</span>
+        IP: <span>{decodeURIComponent(params.ip)}</span>
       </div>
     </main>
   );
