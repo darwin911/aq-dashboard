@@ -16,14 +16,14 @@ export async function GET(request: NextRequest) {
   const headerIp = request.headers.get("x-forwarded-for");
 
   console.log({ ip });
-  // if (ip) {
-  //   const ipInfo: IPinfo = await ipinfoWrapper.lookupIp(ip);
+  if (ip || headerIp) {
+    const ipInfo: IPinfo = await ipinfoWrapper.lookupIp(String(ip || headerIp));
 
-  //   console.log(ipInfo);
-  //   if (ipInfo) {
-  //     return ipInfo;
-  //   }
-  // }
+    console.log({ ipInfo });
+    if (ipInfo) {
+      return NextResponse.json(ipInfo);
+    }
+  }
   return NextResponse.json({
     message: "Endpoint IP working?",
     ip: ip ? ip : "N/A",
