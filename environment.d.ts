@@ -1,6 +1,6 @@
 namespace NodeJS {
   interface ProcessEnv {
     IPINFO_TOKEN: string;
-    VERCEL_URL: string;
+    DEPLOY_URL: string;
   }
 }

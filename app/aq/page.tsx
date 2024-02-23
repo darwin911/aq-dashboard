@@ -1,7 +1,7 @@
-const VERCEL_URL = process.env.VERCEL_URL;
+const DEPLOY_URL = process.env.DEPLOY_URL;
 
 export default async function IpPage() {
-  const res = await fetch(new URL("/api/ip", VERCEL_URL));
+  const res = await fetch(new URL("/api/ip", DEPLOY_URL));
   let ipData;
   if (res.ok) {
     const data = await res.json();
