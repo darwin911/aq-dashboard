@@ -24,8 +24,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(ipInfo);
     }
   }
+
   return NextResponse.json({
-    message: "Endpoint IP working?",
+    message: "Failed to find a valid ip",
     ip: ip ? ip : "N/A",
     headerIp: headerIp ? headerIp : "N/A",
   });
