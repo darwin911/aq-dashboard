@@ -1709,6 +1709,11 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
+lru-cache@^7.18.3:
+  version "7.18.3"
+  resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-7.18.3.tgz#f793896e0fd0e954a59dfdd82f0773808df6aa89"
+  integrity sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==
+
 "lru-cache@^9.1.1 || ^10.0.0":
   version "10.2.0"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-10.2.0.tgz#0bd445ca57363465900f4d1f9bd8db343a4d95c3"
@@ -1802,6 +1807,14 @@ next@14.1.0:
     "@next/swc-win32-arm64-msvc" "14.1.0"
     "@next/swc-win32-ia32-msvc" "14.1.0"
     "@next/swc-win32-x64-msvc" "14.1.0"
+
+node-ipinfo@^3.5.1:
+  version "3.5.1"
+  resolved "https://registry.yarnpkg.com/node-ipinfo/-/node-ipinfo-3.5.1.tgz#64249e89456e24c02073e93ecca6cdec17c8c886"
+  integrity sha512-sh9yzyItNmc6SetUfJaTn0vaHhbxmVd9oFJceo2PwMXrDdHgR5hEwOkHK+fXKypQRTc1KXq9pzMmrEzCFNFlow==
+  dependencies:
+    lru-cache "^7.18.3"
+    subnet-check "^1.10.1"
 
 node-releases@^2.0.14:
   version "2.0.14"
@@ -2290,6 +2303,7 @@ streamsearch@^1.1.0:
   integrity sha512-Mcc5wHehp9aXz1ax6bZUyY5afg9u2rv5cqQI3mRrYkGC8rW2hM02jWuwjtL++LS5qinSyhj2QfLyNsuc+VsExg==
 
 "string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0:
+  name string-width-cjs
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -2350,6 +2364,7 @@ string.prototype.trimstart@^1.0.7:
     es-abstract "^1.22.1"
 
 "strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+  name strip-ansi-cjs
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
@@ -2379,6 +2394,11 @@ styled-jsx@5.1.1:
   integrity sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==
   dependencies:
     client-only "0.0.1"
+
+subnet-check@^1.10.1:
+  version "1.10.1"
+  resolved "https://registry.yarnpkg.com/subnet-check/-/subnet-check-1.10.1.tgz#449025f12cac8d7fccc304a25de25735c4b400d5"
+  integrity sha512-e8lXZ9ICcG42fFsMDZO5TTZ3uS2436b5hnx3uS4Z3XkAFuDLa5R3Pvt9lYhewKm/vCd48t14v0jFaSmVYOT2Kg==
 
 sucrase@^3.32.0:
   version "3.35.0"
