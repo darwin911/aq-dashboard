@@ -9,12 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "iso-3166-1-alpha-2": "^1.0.1",
     "next": "14.1.0",
     "node-ipinfo": "^3.5.1",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
+    "@types/iso-3166-1-alpha-2": "^1.0.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
