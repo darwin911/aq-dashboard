@@ -8,7 +8,9 @@ const ipinfoWrapper = new IPinfoWrapper(token);
 export async function GET(request: NextRequest) {
   console.log("\n** GET / Running **\n");
 
-  const ip = request.ip || request.headers.get("x-forwarded-for");
+  const ip = request.ip;
+
+  console.log({ ip });
   if (ip) {
     const ipInfo: IPinfo = await ipinfoWrapper.lookupIp(ip);
 
