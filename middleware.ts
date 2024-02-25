@@ -109,16 +109,3 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: "/",
 };
-
-const example = {
-  ip: "212.102.51.243",
-  hostname: "unn-212-102-51-243.cdn77.com",
-  city: "Tokyo",
-  region: "Tokyo",
-  country: "JP",
-  loc: "35.6895,139.6917",
-  org: "AS212238 Datacamp Limited",
-  postal: "101-8656",
-  timezone: "Asia/Tokyo",
-  readme: "https://ipinfo.io/missingauth",
-};
