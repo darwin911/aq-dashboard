@@ -17,7 +17,7 @@ export async function middleware(request: NextRequest) {
     ip = ip.split(",")[0];
   }
 
-  console.log({ ip });
+  console.debug({ ip });
 
   if (ip && ip !== "::1") {
     const res = await fetch(`http://ipinfo.io/${ip}/json`);
@@ -31,10 +31,10 @@ export async function middleware(request: NextRequest) {
     geo = data;
   }
 
-  console.log("\nGeo", geo, "\n");
+  console.debug("\nGeo", geo, "\n");
 
   if (!geo) {
-    console.log("No Geo data found");
+    console.debug("No Geo data found");
     return NextResponse.next();
   }
   let search = new URLSearchParams(geo);
