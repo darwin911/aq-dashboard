@@ -26,46 +26,42 @@ export async function middleware(request: NextRequest) {
 
     const data = await res.json();
     console.log("\nGeo:", data, "\n");
-    geo = new URLSearchParams(data);
+    geo = data;
   }
 
   console.log("\nGeo", geo, "\n");
-
-  //   const TEMP = new URLSearchParams({
-  //     city: "philly",
-  //     country: "Armenia",
-  //     lat: "2.233",
-  //     lon: "-1.233",
-  //   });
 
   if (!geo) {
     console.log("No Geo data found");
     return NextResponse.next();
   }
+  let search = new URLSearchParams(geo);
 
-  const example = {
-    ip: "212.102.51.243",
-    hostname: "unn-212-102-51-243.cdn77.com",
-    city: "Tokyo",
-    region: "Tokyo",
-    country: "JP",
-    loc: "35.6895,139.6917",
-    org: "AS212238 Datacamp Limited",
-    postal: "101-8656",
-    timezone: "Asia/Tokyo",
-    readme: "https://ipinfo.io/missingauth",
-  };
+  search.delete("readme");
 
   console.log(
     "Redirecting!",
-    new URL(`/?${geo.toString()}}`, request.url).toString()
+    new URL(`/?${new URLSearchParams(geo).toString()}}`, request.url).toString()
   );
 
   return NextResponse.redirect(
-    new URL(`/?${geo.toString()}`, request.url).toString()
+    new URL(`/?${new URLSearchParams(geo).toString()}}`, request.url).toString()
   );
 }
 
 export const config = {
   matcher: "/",
+};
+
+const example = {
+  ip: "212.102.51.243",
+  hostname: "unn-212-102-51-243.cdn77.com",
+  city: "Tokyo",
+  region: "Tokyo",
+  country: "JP",
+  loc: "35.6895,139.6917",
+  org: "AS212238 Datacamp Limited",
+  postal: "101-8656",
+  timezone: "Asia/Tokyo",
+  readme: "https://ipinfo.io/missingauth",
 };
