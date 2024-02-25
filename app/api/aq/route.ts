@@ -4,7 +4,7 @@ import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
 import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
 import { MeasurementsResponse, geoDataType } from "@/lib/types";
-import { getO3Index } from "@/lib/utils";
+import { getNO2orSO2, getO3Index, getPM10, getPM25orUM100 } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -86,108 +86,18 @@ export async function GET(request: NextRequest) {
 
       if (latestMeasurement.parameter === PARAMETERS.O3) {
         AQIndex = getO3Index(data);
-        // const avgLastEightHour =
-        //   data.results
-        //     .slice(0, 8)
-        //     .reduce((acc, result) => acc + result.value, 0) / 8;
-
-        // if (avgLastEightHour >= 0 && avgLastEightHour <= 0.054) {
-        //   AQIndex = AQ_INDEX.GOOD;
-        // } else if (avgLastEightHour >= 0.055 && avgLastEightHour <= 0.07) {
-        //   AQIndex = AQ_INDEX.MODERATE;
-        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-        //   AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
-        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-        //   AQIndex = AQ_INDEX.UNHEALTHY;
-        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-        //   AQIndex = AQ_INDEX.VERY_UNHEALTHY;
-        // } else {
-        //   AQIndex = AQ_INDEX.HAZARDOUS;
-        // }
       } else if (
         latestMeasurement.parameter === PARAMETERS.PM25 ||
         latestMeasurement.parameter === PARAMETERS.UM100
       ) {
-        const avgLastTwentyFourHour =
-          data.results
-            .slice(0, 24)
-            .reduce((acc, result) => acc + result.value, 0) / 24;
-
-        if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 12.0) {
-          AQIndex = AQ_INDEX.GOOD;
-        } else if (
-          avgLastTwentyFourHour >= 12.1 &&
-          avgLastTwentyFourHour <= 35.4
-        ) {
-          AQIndex = AQ_INDEX.MODERATE;
-        } else if (
-          avgLastTwentyFourHour >= 35.5 &&
-          avgLastTwentyFourHour <= 55.4
-        ) {
-          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
-        } else if (
-          avgLastTwentyFourHour >= 55.5 &&
-          avgLastTwentyFourHour <= 150.4
-        ) {
-          AQIndex = AQ_INDEX.UNHEALTHY;
-        } else if (
-          avgLastTwentyFourHour >= 150.5 &&
-          avgLastTwentyFourHour <= 250.4
-        ) {
-          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
-        } else {
-          AQIndex = AQ_INDEX.HAZARDOUS;
-        }
+        AQIndex = getPM25orUM100(data);
       } else if (latestMeasurement.parameter === PARAMETERS.PM10) {
-        const avgLastTwentyFourHour =
-          data.results
-            .slice(0, 24)
-            .reduce((acc, result) => acc + result.value, 0) / 24;
-
-        if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 54) {
-          AQIndex = AQ_INDEX.GOOD;
-        } else if (
-          avgLastTwentyFourHour >= 55 &&
-          avgLastTwentyFourHour <= 154
-        ) {
-          AQIndex = AQ_INDEX.MODERATE;
-        } else if (
-          avgLastTwentyFourHour >= 155 &&
-          avgLastTwentyFourHour <= 254
-        ) {
-          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
-        } else if (
-          avgLastTwentyFourHour >= 255 &&
-          avgLastTwentyFourHour <= 354
-        ) {
-          AQIndex = AQ_INDEX.UNHEALTHY;
-        } else if (
-          avgLastTwentyFourHour >= 355 &&
-          avgLastTwentyFourHour <= 424
-        ) {
-          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
-        } else {
-          AQIndex = AQ_INDEX.HAZARDOUS;
-        }
+        AQIndex = getPM10(data);
       } else if (
         latestMeasurement.parameter === PARAMETERS.NO2 ||
         latestMeasurement.parameter === PARAMETERS.SO2
       ) {
-        const last = data.results[0];
-
-        if (last.value >= 0 && last.value <= 53) {
-          AQIndex = AQ_INDEX.GOOD;
-        } else if (last.value >= 54 && last.value <= 100) {
-          AQIndex = AQ_INDEX.MODERATE;
-        } else if (last.value >= 101 && last.value <= 360) {
-          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
-        } else if (last.value >= 361 && last.value <= 649) {
-          AQ_INDEX.UNHEALTHY;
-        } else if (last.value >= 650 && last.value <= 1249) {
-          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
-        } else {
-          AQIndex = AQ_INDEX.HAZARDOUS;
-        }
+        AQIndex = getNO2orSO2(data);
       }
 
       const locationId = latestMeasurement.locationId;

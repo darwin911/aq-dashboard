@@ -1,6 +1,6 @@
 import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
 import { MeasurementsResponse, geoDataType } from "@/lib/types";
-import { getO3Index } from "@/lib/utils";
+import { getNO2orSO2, getO3Index, getPM10, getPM25orUM100 } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -8,8 +8,8 @@ export async function middleware(request: NextRequest) {
   if (request.url.includes("?")) {
     return NextResponse.next();
   }
-
   let ip = request.headers.get("x-forwarded-for");
+  //   let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
   let geo: geoDataType = null;
 
   if (ip && ip.split(",")[0] !== "::1") {
@@ -45,7 +45,9 @@ export async function middleware(request: NextRequest) {
 
   console.debug({ geoLat, geoLong });
 
-  const openaqURL = `https://api.openaq.org/v2/measurements?$limit=24&page=1&offset=0&sort=desc&coordinates=${geoLat}%2C${geoLong}`;
+  const openaqURL = `https://api.openaq.org/v2/measurements?limit=24&page=1&offset=0&sort=desc&coordinates=${Number(
+    geoLat
+  ).toFixed(3)}%2C${Number(geoLong).toFixed(3)}`;
 
   console.log({ openaqURL });
 
@@ -53,7 +55,7 @@ export async function middleware(request: NextRequest) {
     headers: { "Content-Type": "application/json" },
   });
 
-  const data: MeasurementsResponse = await openaqResponse.json();
+  const aqData: MeasurementsResponse = await openaqResponse.json();
 
   if (!openaqResponse.ok) {
     return NextResponse.json({
@@ -61,29 +63,46 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  if (data.results.length) {
+  if (aqData.results.length) {
     let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
 
-    if (data.results[0].parameter === PARAMETERS.O3) {
-      AQIndex = getO3Index(data);
+    switch (aqData.results[0].parameter) {
+      case PARAMETERS.O3:
+        AQIndex = getO3Index(aqData);
+
+      case PARAMETERS.PM25:
+      case PARAMETERS.UM100:
+        AQIndex = getPM25orUM100(aqData);
+
+      case PARAMETERS.PM10:
+        AQIndex = getPM10(aqData);
+
+      case PARAMETERS.NO2:
+      case PARAMETERS.SO2:
+        AQIndex = getNO2orSO2(aqData);
+
+      default:
+        break;
     }
 
-    return NextResponse.redirect(new URL(`?aq=${AQIndex}`, request.url));
+    if (AQIndex === "N/A") {
+      return NextResponse.next();
+    }
+
+    search.append("aqi", AQIndex);
+
+    return NextResponse.redirect(
+      new URL(`?${new URLSearchParams(search).toString()}`, request.url)
+    );
   }
 
   console.log(
     "Redirecting!",
-    new URL(
-      `/?${new URLSearchParams(search).toString()}}`,
-      request.url
-    ).toString()
+    new URL(`/?${new URLSearchParams(search).toString()}}`, request.url)
   );
 
   return NextResponse.redirect(
-    new URL(
-      `/?${new URLSearchParams(search).toString()}}`,
-      request.url
-    ).toString()
+    new URL(`/?${new URLSearchParams(search).toString()}}`, request.url)
   );
 }
 
