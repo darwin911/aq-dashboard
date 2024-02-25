@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
-import { jwtDecode } from "jwt-decode";
+import { lookup } from "geoip-lite";
 
 export const dynamic = "force-dynamic";
 
@@ -44,28 +44,37 @@ const AQ_INDEX = {
   HAZARDOUS: "Hazardous" as const,
 };
 
+type ipLookupType = {
+  range: number[];
+  country: string;
+  region: string;
+  eu: string;
+  timezone: string;
+  city: string;
+  ll: number[];
+  metro: number;
+  area: number;
+} | null;
+
 export async function GET(request: NextRequest) {
   unstable_noStore();
   console.log("\n** GET /aq Running **\n");
 
-  let ip;
-  let geo = request.headers.get("x-nf-geo");
+  let ip = request.headers.get("x-forwarded-for");
+  let geo: ipLookupType = null;
 
-  if (
-    request.headers.get("x-forwarded-for") &&
-    request.headers.get("x-forwarded-for")?.split(",")[0] !== "::1"
-  ) {
-    ip = request.headers.get("x-forwarded-for")?.split(",")[0];
+  if (ip && ip.split(",")[0] !== "::1") {
+    ip = ip.split(",")[0];
   }
 
-  if (geo) {
-    geo = jwtDecode(geo);
+  console.log({ ip });
+
+  if (ip && ip !== "::1") {
+    geo = lookup(ip);
   }
 
-  console.log("\nIP:", ip, "\n");
-
-  console.log("\nHeaders", request.headers, "\n");
-
+  // console.log("\nIP:", ip, "\n");
+  // console.log("\nHeaders", request.headers, "\n");
   console.log("\nGeo", geo, "\n");
 
   // if (request.headers["x-forwarded-for"]) {
