@@ -1,9 +1,9 @@
 import { AQ_INDEX } from "@/lib/shared";
 import { MeasurementsResponse } from "@/lib/types";
 
-export function getO3Index(data: MeasurementsResponse) {
+export function getO3Index(data: MeasurementsResponse["results"]) {
   const avgLastEightHour =
-    data.results.slice(0, 8).reduce((acc, result) => acc + result.value, 0) / 8;
+    data.slice(0, 8).reduce((acc, result) => acc + result.value, 0) / 8;
 
   if (avgLastEightHour >= 0 && avgLastEightHour <= 0.054) {
     return AQ_INDEX.GOOD;
@@ -20,10 +20,9 @@ export function getO3Index(data: MeasurementsResponse) {
   }
 }
 
-export function getPM25orUM100(data: MeasurementsResponse) {
+export function getPM25orUM100(data: MeasurementsResponse["results"]) {
   const avgLastTwentyFourHour =
-    data.results.slice(0, 24).reduce((acc, result) => acc + result.value, 0) /
-    24;
+    data.slice(0, 24).reduce((acc, result) => acc + result.value, 0) / 24;
 
   if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 12.0) {
     return AQ_INDEX.GOOD;
@@ -40,10 +39,9 @@ export function getPM25orUM100(data: MeasurementsResponse) {
   }
 }
 
-export function getPM10(data: MeasurementsResponse) {
+export function getPM10(data: MeasurementsResponse["results"]) {
   const avgLastTwentyFourHour =
-    data.results.slice(0, 24).reduce((acc, result) => acc + result.value, 0) /
-    24;
+    data.slice(0, 24).reduce((acc, result) => acc + result.value, 0) / 24;
 
   if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 54) {
     return AQ_INDEX.GOOD;
@@ -60,8 +58,8 @@ export function getPM10(data: MeasurementsResponse) {
   }
 }
 
-export function getNO2orSO2(data: MeasurementsResponse) {
-  const last = data.results[0];
+export function getNO2orSO2(data: MeasurementsResponse["results"]) {
+  const last = data[0];
 
   if (last.value >= 0 && last.value <= 53) {
     return AQ_INDEX.GOOD;

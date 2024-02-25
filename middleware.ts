@@ -61,23 +61,29 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  if (aqData.results.length) {
+  const cleanResults = aqData.results.filter((result) => result.value > 0);
+
+  if (cleanResults.length) {
     let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
 
-    switch (aqData.results[0].parameter) {
+    const latestMeasurement = cleanResults[0];
+
+    console.log({ latestMeasurement });
+
+    switch (latestMeasurement.parameter) {
       case PARAMETERS.O3:
-        AQIndex = getO3Index(aqData);
+        AQIndex = getO3Index(cleanResults);
 
       case PARAMETERS.PM25:
       case PARAMETERS.UM100:
-        AQIndex = getPM25orUM100(aqData);
+        AQIndex = getPM25orUM100(cleanResults);
 
       case PARAMETERS.PM10:
-        AQIndex = getPM10(aqData);
+        AQIndex = getPM10(cleanResults);
 
       case PARAMETERS.NO2:
       case PARAMETERS.SO2:
-        AQIndex = getNO2orSO2(aqData);
+        AQIndex = getNO2orSO2(cleanResults);
 
       default:
         break;
