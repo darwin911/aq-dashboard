@@ -27,7 +27,6 @@ export async function middleware(request: NextRequest) {
     }
 
     const data: geoDataType = await res.json();
-    console.log("\nGeo:", data, "\n");
     geo = data;
   }
 
