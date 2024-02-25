@@ -39,26 +39,29 @@ export async function middleware(request: NextRequest) {
 
   search.delete("readme");
 
-  const openaqResponse = await fetch(
-    `https://api.openaq.org/v2/measurements?$limit=24&page=1&offset=0&sort=desc&coordinates=${geo["lat"]}%2C${geo["lon"]}`,
-    {
-      headers: { "Content-Type": "application/json" },
-    }
-  );
+  const openaqURL = `https://api.openaq.org/v2/measurements?$limit=24&page=1&offset=0&sort=desc&coordinates=${geo["lat"]}%2C${geo["lon"]}`;
+  console.log({ openaqURL });
 
-  const data: MeasurementsResponse = await openaqResponse.json();
+  //   const openaqResponse = await fetch(
+  //     `https://api.openaq.org/v2/measurements?$limit=24&page=1&offset=0&sort=desc&coordinates=${geo["lat"]}%2C${geo["lon"]}`,
+  //     {
+  //       headers: { "Content-Type": "application/json" },
+  //     }
+  //   );
 
-  if (!openaqResponse.ok) {
-    return NextResponse.json({
-      message: "Failed to find AQ Data. Response NOT OK",
-    });
-  }
+  //   const data: MeasurementsResponse = await openaqResponse.json();
 
-  if (data.results.length) {
-    return NextResponse.redirect(
-      new URL(`?results=${data.results.length}`, request.url)
-    );
-  }
+  //   if (!openaqResponse.ok) {
+  //     return NextResponse.json({
+  //       message: "Failed to find AQ Data. Response NOT OK",
+  //     });
+  //   }
+
+  //   if (data.results.length) {
+  //     return NextResponse.redirect(
+  //       new URL(`?results=${data.results.length}`, request.url)
+  //     );
+  //   }
 
   console.log(
     "Redirecting!",
