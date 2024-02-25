@@ -100,13 +100,8 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  console.log(
-    "Redirecting!",
-    new URL(`/?${new URLSearchParams(search).toString()}}`, request.url)
-  );
-
   return NextResponse.redirect(
-    new URL(`/?${new URLSearchParams(search).toString()}}`, request.url)
+    new URL(`/?${new URLSearchParams(search).toString()}`, request.url)
   );
 }
 
