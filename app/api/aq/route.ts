@@ -2,58 +2,11 @@ import { NextResponse } from "next/server";
 
 import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
+import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
+import { MeasurementsResponse, geoDataType } from "@/lib/types";
+import { getO3Index } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-export type MeasurementsResponse = {
-  meta: { name: string };
-  results: {
-    locationId: number;
-    location: string;
-    parameter: string;
-    value: number;
-    date: { utc: string; local: string };
-    unit: string;
-    coordinates: {
-      latitude: number;
-      longitude: number;
-    };
-    country: string;
-    isMobile: boolean;
-    entity: string;
-    sensorType: string;
-  }[];
-};
-
-const PARAMETERS = {
-  O3: "o3",
-  PM25: "pm25",
-  PM10: "pm10",
-  NO2: "no2",
-  SO2: "so2",
-  UM100: "um100",
-};
-
-const AQ_INDEX = {
-  GOOD: "Good" as const,
-  MODERATE: "Moderate" as const,
-  UNHEALTHY_FOR_SENSITIVE: "Unhealthy for Sensitive Groups" as const,
-  UNHEALTHY: "Unhealthy" as const,
-  VERY_UNHEALTHY: "Very Unhealthy" as const,
-  HAZARDOUS: "Hazardous" as const,
-};
-
-export type geoDataType = {
-  ip: string;
-  city: string;
-  region: string;
-  country: string;
-  loc: string;
-  org: string;
-  postal: string;
-  timezone: string;
-  readme: string;
-} | null;
 
 export async function GET(request: NextRequest) {
   unstable_noStore();
@@ -132,24 +85,25 @@ export async function GET(request: NextRequest) {
       let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
 
       if (latestMeasurement.parameter === PARAMETERS.O3) {
-        const avgLastEightHour =
-          data.results
-            .slice(0, 8)
-            .reduce((acc, result) => acc + result.value, 0) / 8;
+        AQIndex = getO3Index(data);
+        // const avgLastEightHour =
+        //   data.results
+        //     .slice(0, 8)
+        //     .reduce((acc, result) => acc + result.value, 0) / 8;
 
-        if (avgLastEightHour >= 0 && avgLastEightHour <= 0.054) {
-          AQIndex = AQ_INDEX.GOOD;
-        } else if (avgLastEightHour >= 0.055 && avgLastEightHour <= 0.07) {
-          AQIndex = AQ_INDEX.MODERATE;
-        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
-        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-          AQIndex = AQ_INDEX.UNHEALTHY;
-        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
-          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
-        } else {
-          AQIndex = AQ_INDEX.HAZARDOUS;
-        }
+        // if (avgLastEightHour >= 0 && avgLastEightHour <= 0.054) {
+        //   AQIndex = AQ_INDEX.GOOD;
+        // } else if (avgLastEightHour >= 0.055 && avgLastEightHour <= 0.07) {
+        //   AQIndex = AQ_INDEX.MODERATE;
+        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+        //   AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
+        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+        //   AQIndex = AQ_INDEX.UNHEALTHY;
+        // } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+        //   AQIndex = AQ_INDEX.VERY_UNHEALTHY;
+        // } else {
+        //   AQIndex = AQ_INDEX.HAZARDOUS;
+        // }
       } else if (
         latestMeasurement.parameter === PARAMETERS.PM25 ||
         latestMeasurement.parameter === PARAMETERS.UM100

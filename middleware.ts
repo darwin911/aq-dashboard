@@ -1,4 +1,6 @@
-import { MeasurementsResponse, geoDataType } from "@/app/api/aq/route";
+import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
+import { MeasurementsResponse, geoDataType } from "@/lib/types";
+import { getO3Index } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -8,7 +10,7 @@ export async function middleware(request: NextRequest) {
   }
 
   let ip = request.headers.get("x-forwarded-for");
-  let geo: any = null;
+  let geo: geoDataType = null;
 
   if (ip && ip.split(",")[0] !== "::1") {
     ip = ip.split(",")[0];
@@ -24,7 +26,7 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    const data = await res.json();
+    const data: geoDataType = await res.json();
     console.log("\nGeo:", data, "\n");
     geo = data;
   }
@@ -60,9 +62,13 @@ export async function middleware(request: NextRequest) {
   }
 
   if (data.results.length) {
-    return NextResponse.redirect(
-      new URL(`?results=${data.results.length}`, request.url)
-    );
+    let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
+
+    if (data.results[0].parameter === PARAMETERS.O3) {
+      AQIndex = getO3Index(data);
+    }
+
+    return NextResponse.redirect(new URL(`?aq=${AQIndex}`, request.url));
   }
 
   console.log(
