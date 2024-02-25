@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
+import { jwtDecode } from "jwt-decode";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,7 @@ export async function GET(request: NextRequest) {
   console.log("\n** GET /aq Running **\n");
 
   let ip;
+  let geo = request.headers.get("x-nf-geo");
 
   if (
     request.headers.get("x-forwarded-for") &&
@@ -56,9 +58,15 @@ export async function GET(request: NextRequest) {
     ip = request.headers.get("x-forwarded-for")?.split(",")[0];
   }
 
+  if (geo) {
+    geo = jwtDecode(geo);
+  }
+
   console.log("\nIP:", ip, "\n");
 
   console.log("\nHeaders", request.headers, "\n");
+
+  console.log("\nGeo", geo, "\n");
 
   // if (request.headers["x-forwarded-for"]) {
   //   ip = request.headers["x-forwarded-for"].split(",")[0];
