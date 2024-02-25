@@ -43,9 +43,7 @@ export async function middleware(request: NextRequest) {
 
   const [geoLat, geoLong] = geo["loc"].split(",");
 
-  console.debug({ geoLat, geoLong });
-
-  const openaqURL = `https://api.openaq.org/v2/measurements?limit=24&page=1&offset=0&sort=desc&coordinates=${Number(
+  const openaqURL = `https://api.openaq.org/v2/measurements?limit=300&page=1&offset=0&sort=desc&coordinates=${Number(
     geoLat
   ).toFixed(3)}%2C${Number(geoLong).toFixed(3)}`;
 
