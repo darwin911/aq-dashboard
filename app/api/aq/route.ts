@@ -79,25 +79,27 @@ export async function GET(request: NextRequest) {
       }))
     );
 
-    if (data.results.length) {
+    const cleanResults = data.results.filter((result) => result.value > 0);
+
+    if (cleanResults.length) {
       const latestMeasurement = data.results[0];
 
       let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
 
       if (latestMeasurement.parameter === PARAMETERS.O3) {
-        AQIndex = getO3Index(data);
+        AQIndex = getO3Index(cleanResults);
       } else if (
         latestMeasurement.parameter === PARAMETERS.PM25 ||
         latestMeasurement.parameter === PARAMETERS.UM100
       ) {
-        AQIndex = getPM25orUM100(data);
+        AQIndex = getPM25orUM100(cleanResults);
       } else if (latestMeasurement.parameter === PARAMETERS.PM10) {
-        AQIndex = getPM10(data);
+        AQIndex = getPM10(cleanResults);
       } else if (
         latestMeasurement.parameter === PARAMETERS.NO2 ||
         latestMeasurement.parameter === PARAMETERS.SO2
       ) {
-        AQIndex = getNO2orSO2(data);
+        AQIndex = getNO2orSO2(cleanResults);
       }
 
       const locationId = latestMeasurement.locationId;
