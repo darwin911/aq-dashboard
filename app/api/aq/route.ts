@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
-import { lookup } from "geoip-lite";
 
 export const dynamic = "force-dynamic";
 
@@ -44,16 +43,16 @@ const AQ_INDEX = {
   HAZARDOUS: "Hazardous" as const,
 };
 
-type ipLookupType = {
-  range: number[];
-  country: string;
-  region: string;
-  eu: string;
-  timezone: string;
+type geoDataType = {
+  ip: string;
   city: string;
-  ll: number[];
-  metro: number;
-  area: number;
+  region: string;
+  country: string;
+  loc: string;
+  org: string;
+  postal: string;
+  timezone: string;
+  readme: string;
 } | null;
 
 export async function GET(request: NextRequest) {
@@ -61,7 +60,7 @@ export async function GET(request: NextRequest) {
   console.log("\n** GET /aq Running **\n");
 
   let ip = request.headers.get("x-forwarded-for");
-  let geo: ipLookupType = null;
+  let geo: geoDataType = null;
 
   if (ip && ip.split(",")[0] !== "::1") {
     ip = ip.split(",")[0];
@@ -70,7 +69,16 @@ export async function GET(request: NextRequest) {
   console.log({ ip });
 
   if (ip && ip !== "::1") {
-    geo = lookup(ip);
+    const res = await fetch(`http://ipinfo.io/${ip}/json`);
+    if (!res.ok) {
+      throw new Error(
+        "Something went wrong when fetching ip geolocation data."
+      );
+    }
+
+    const data = await res.json();
+    console.log("\nGeo:", data, "\n");
+    geo = data;
   }
 
   // console.log("\nIP:", ip, "\n");
