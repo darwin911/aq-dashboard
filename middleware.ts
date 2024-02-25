@@ -1,4 +1,4 @@
-import { geoDataType } from "@/app/api/aq/route";
+import { MeasurementsResponse, geoDataType } from "@/app/api/aq/route";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
@@ -39,13 +39,40 @@ export async function middleware(request: NextRequest) {
 
   search.delete("readme");
 
+  const openaqResponse = await fetch(
+    `https://api.openaq.org/v2/measurements?$limit=24&page=1&offset=0&sort=desc&coordinates=${geo["lat"]}%2C${geo["lon"]}`,
+    {
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+
+  const data: MeasurementsResponse = await openaqResponse.json();
+
+  if (!openaqResponse.ok) {
+    return NextResponse.json({
+      message: "Failed to find AQ Data. Response NOT OK",
+    });
+  }
+
+  if (data.results.length) {
+    return NextResponse.redirect(
+      new URL(`?results=${data.results.length}`, request.url)
+    );
+  }
+
   console.log(
     "Redirecting!",
-    new URL(`/?${new URLSearchParams(geo).toString()}}`, request.url).toString()
+    new URL(
+      `/?${new URLSearchParams(search).toString()}}`,
+      request.url
+    ).toString()
   );
 
   return NextResponse.redirect(
-    new URL(`/?${new URLSearchParams(geo).toString()}}`, request.url).toString()
+    new URL(
+      `/?${new URLSearchParams(search).toString()}}`,
+      request.url
+    ).toString()
   );
 }
 

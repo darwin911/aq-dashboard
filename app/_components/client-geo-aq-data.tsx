@@ -7,8 +7,8 @@ export default function ClientGeoAQDAta() {
   const [airQualityData, setAirQualityData] = useState<null | any>(null);
 
   const getAQ = useCallback(
-    async ({ lat, long }: { lat: string; long: string }) => {
-      const aqRes = await fetch(`/api/aq/?lat=${lat}&long=${long}`, {
+    async ({ lat, lon }: { lat: string; lon: string }) => {
+      const aqRes = await fetch(`/api/aq/?lat=${lat}&long=${lon}`, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -32,7 +32,7 @@ export default function ClientGeoAQDAta() {
 
           const aqData = await getAQ({
             lat: latitude,
-            long: longitude,
+            lon: longitude,
           });
 
           setAirQualityData(aqData);

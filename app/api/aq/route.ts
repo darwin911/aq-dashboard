@@ -5,7 +5,7 @@ import { unstable_noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
 
-type MeasurementsResponse = {
+export type MeasurementsResponse = {
   meta: { name: string };
   results: {
     locationId: number;
@@ -85,23 +85,23 @@ export async function GET(request: NextRequest) {
 
   const params = new URL(request.url).searchParams;
   let lat = params.get("lat");
-  let long = params.get("long");
+  let lon = params.get("long");
 
   if (lat) {
     lat = Number(lat).toFixed(3);
   }
 
-  if (long) {
-    long = Number(long).toFixed(3);
+  if (lon) {
+    lon = Number(lon).toFixed(3);
   }
 
-  if (!lat || !long) {
+  if (!lat || !lon) {
     throw new Error("Latitude and Longitude are required to fetch Air Quality");
   }
 
   const baseUrl = "https://api.openaq.org/v2";
 
-  const airQualityUrl = `${baseUrl}/measurements?&limit=24&page=1&offset=0&sort=desc&coordinates=${lat}%2C${long}&radius=10000&order_by=datetime`;
+  const airQualityUrl = `${baseUrl}/measurements?&limit=24&page=1&offset=0&sort=desc&coordinates=${lat}%2C${lon}&radius=10000&order_by=datetime`;
 
   console.log({ airQualityUrl });
 
@@ -266,7 +266,7 @@ export async function GET(request: NextRequest) {
             city: cityLocation ?? "N/A",
             aqIndex: AQIndex,
             ip: ip,
-            geo: { lat, long },
+            geo: { lat, long: lon },
           });
         } catch (error) {
           console.error("Error", error);
