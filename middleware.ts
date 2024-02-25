@@ -9,6 +9,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   let ip = request.headers.get("x-forwarded-for");
+  //   let ip = "212.8.250.217";
   //   let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
   let geo: geoDataType = null;
 
