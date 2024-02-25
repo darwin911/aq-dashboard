@@ -43,7 +43,7 @@ const AQ_INDEX = {
   HAZARDOUS: "Hazardous" as const,
 };
 
-type geoDataType = {
+export type geoDataType = {
   ip: string;
   city: string;
   region: string;
@@ -81,17 +81,7 @@ export async function GET(request: NextRequest) {
     geo = data;
   }
 
-  // console.log("\nIP:", ip, "\n");
-  // console.log("\nHeaders", request.headers, "\n");
   console.log("\nGeo", geo, "\n");
-
-  // if (request.headers["x-forwarded-for"]) {
-  //   ip = request.headers["x-forwarded-for"].split(",")[0];
-  // } else if (request.headers["x-real-ip"]) {
-  //   ip = request.connection.remoteAddress;
-  // } else {
-  //   ip = request.connection.remoteAddress;
-  // }
 
   const params = new URL(request.url).searchParams;
   let lat = params.get("lat");
@@ -276,6 +266,7 @@ export async function GET(request: NextRequest) {
             city: cityLocation ?? "N/A",
             aqIndex: AQIndex,
             ip: ip,
+            geo: { lat, long },
           });
         } catch (error) {
           console.error("Error", error);
