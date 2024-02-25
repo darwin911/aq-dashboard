@@ -25,17 +25,68 @@ type MeasurementsResponse = {
   }[];
 };
 
+const PARAMETERS = {
+  O3: "o3",
+  PM25: "pm25",
+  PM10: "pm10",
+  NO2: "no2",
+  SO2: "so2",
+  UM100: "um100",
+};
+
+const AQ_INDEX = {
+  GOOD: "Good" as const,
+  MODERATE: "Moderate" as const,
+  UNHEALTHY_FOR_SENSITIVE: "Unhealthy for Sensitive Groups" as const,
+  UNHEALTHY: "Unhealthy" as const,
+  VERY_UNHEALTHY: "Very Unhealthy" as const,
+  HAZARDOUS: "Hazardous" as const,
+};
+
 export async function GET(request: NextRequest) {
   unstable_noStore();
   console.log("\n** GET /aq Running **\n");
 
+  let ip;
+
+  if (
+    request.headers.get("x-forwarded-for") &&
+    request.headers.get("x-forwarded-for")?.split(",")[0] !== "::1"
+  ) {
+    ip = request.headers.get("x-forwarded-for")?.split(",")[0];
+  }
+
+  console.log("\nIP:", ip, "\n");
+
+  console.log("\nHeaders", request.headers, "\n");
+
+  // if (request.headers["x-forwarded-for"]) {
+  //   ip = request.headers["x-forwarded-for"].split(",")[0];
+  // } else if (request.headers["x-real-ip"]) {
+  //   ip = request.connection.remoteAddress;
+  // } else {
+  //   ip = request.connection.remoteAddress;
+  // }
+
   const params = new URL(request.url).searchParams;
-  const lat = params.get("lat");
-  const long = params.get("long");
+  let lat = params.get("lat");
+  let long = params.get("long");
+
+  if (lat) {
+    lat = Number(lat).toFixed(3);
+  }
+
+  if (long) {
+    long = Number(long).toFixed(3);
+  }
+
+  if (!lat || !long) {
+    throw new Error("Latitude and Longitude are required to fetch Air Quality");
+  }
 
   const baseUrl = "https://api.openaq.org/v2";
 
-  const airQualityUrl = `${baseUrl}/measurements?&limit=10&page=1&offset=0&sort=desc&coordinates=${lat}%2C${long}&radius=25000&order_by=datetime`;
+  const airQualityUrl = `${baseUrl}/measurements?&limit=24&page=1&offset=0&sort=desc&coordinates=${lat}%2C${long}&radius=10000&order_by=datetime`;
 
   console.log({ airQualityUrl });
 
@@ -52,23 +103,139 @@ export async function GET(request: NextRequest) {
 
     const data: MeasurementsResponse = await aqRes.json();
 
+    console.debug(
+      data.results.map((r) => ({
+        value: r.value,
+        unit: r.unit,
+        parameter: r.parameter,
+      }))
+    );
+
     if (data.results.length) {
       const latestMeasurement = data.results[0];
 
+      let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
+
+      if (latestMeasurement.parameter === PARAMETERS.O3) {
+        const avgLastEightHour =
+          data.results
+            .slice(0, 8)
+            .reduce((acc, result) => acc + result.value, 0) / 8;
+
+        if (avgLastEightHour >= 0 && avgLastEightHour <= 0.054) {
+          AQIndex = AQ_INDEX.GOOD;
+        } else if (avgLastEightHour >= 0.055 && avgLastEightHour <= 0.07) {
+          AQIndex = AQ_INDEX.MODERATE;
+        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
+        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+          AQIndex = AQ_INDEX.UNHEALTHY;
+        } else if (avgLastEightHour >= 0.071 && avgLastEightHour <= 0.085) {
+          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
+        } else {
+          AQIndex = AQ_INDEX.HAZARDOUS;
+        }
+      } else if (
+        latestMeasurement.parameter === PARAMETERS.PM25 ||
+        latestMeasurement.parameter === PARAMETERS.UM100
+      ) {
+        const avgLastTwentyFourHour =
+          data.results
+            .slice(0, 24)
+            .reduce((acc, result) => acc + result.value, 0) / 24;
+
+        if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 12.0) {
+          AQIndex = AQ_INDEX.GOOD;
+        } else if (
+          avgLastTwentyFourHour >= 12.1 &&
+          avgLastTwentyFourHour <= 35.4
+        ) {
+          AQIndex = AQ_INDEX.MODERATE;
+        } else if (
+          avgLastTwentyFourHour >= 35.5 &&
+          avgLastTwentyFourHour <= 55.4
+        ) {
+          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
+        } else if (
+          avgLastTwentyFourHour >= 55.5 &&
+          avgLastTwentyFourHour <= 150.4
+        ) {
+          AQIndex = AQ_INDEX.UNHEALTHY;
+        } else if (
+          avgLastTwentyFourHour >= 150.5 &&
+          avgLastTwentyFourHour <= 250.4
+        ) {
+          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
+        } else {
+          AQIndex = AQ_INDEX.HAZARDOUS;
+        }
+      } else if (latestMeasurement.parameter === PARAMETERS.PM10) {
+        const avgLastTwentyFourHour =
+          data.results
+            .slice(0, 24)
+            .reduce((acc, result) => acc + result.value, 0) / 24;
+
+        if (avgLastTwentyFourHour >= 0 && avgLastTwentyFourHour <= 54) {
+          AQIndex = AQ_INDEX.GOOD;
+        } else if (
+          avgLastTwentyFourHour >= 55 &&
+          avgLastTwentyFourHour <= 154
+        ) {
+          AQIndex = AQ_INDEX.MODERATE;
+        } else if (
+          avgLastTwentyFourHour >= 155 &&
+          avgLastTwentyFourHour <= 254
+        ) {
+          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
+        } else if (
+          avgLastTwentyFourHour >= 255 &&
+          avgLastTwentyFourHour <= 354
+        ) {
+          AQIndex = AQ_INDEX.UNHEALTHY;
+        } else if (
+          avgLastTwentyFourHour >= 355 &&
+          avgLastTwentyFourHour <= 424
+        ) {
+          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
+        } else {
+          AQIndex = AQ_INDEX.HAZARDOUS;
+        }
+      } else if (
+        latestMeasurement.parameter === PARAMETERS.NO2 ||
+        latestMeasurement.parameter === PARAMETERS.SO2
+      ) {
+        const last = data.results[0];
+
+        if (last.value >= 0 && last.value <= 53) {
+          AQIndex = AQ_INDEX.GOOD;
+        } else if (last.value >= 54 && last.value <= 100) {
+          AQIndex = AQ_INDEX.MODERATE;
+        } else if (last.value >= 101 && last.value <= 360) {
+          AQIndex = AQ_INDEX.UNHEALTHY_FOR_SENSITIVE;
+        } else if (last.value >= 361 && last.value <= 649) {
+          AQ_INDEX.UNHEALTHY;
+        } else if (last.value >= 650 && last.value <= 1249) {
+          AQIndex = AQ_INDEX.VERY_UNHEALTHY;
+        } else {
+          AQIndex = AQ_INDEX.HAZARDOUS;
+        }
+      }
+
       const locationId = latestMeasurement.locationId;
-      console.log("\n", { locationId }, "\n");
+
       if (locationId) {
-        console.debug(`\nhttps://api.openaq.org/v2/locations/${locationId}\n`);
         try {
           const locationResponse = await fetch(
             `https://api.openaq.org/v2/locations/${locationId}`,
             { headers: { "Content-Type": "application/json" } }
           );
+
           if (!locationResponse.ok) {
             return NextResponse.json({
               message: "Failed to find AQ Data. LOCATION Response NOT OK",
             });
           }
+
           const locationData: {
             results: {
               id: number;
@@ -77,13 +244,13 @@ export async function GET(request: NextRequest) {
             }[];
           } = await locationResponse.json();
 
-          console.debug("Location Data: ", locationData);
-
           const cityLocation = locationData.results[0].city;
 
           return NextResponse.json({
             ...latestMeasurement,
             city: cityLocation ?? "N/A",
+            aqIndex: AQIndex,
+            ip: ip,
           });
         } catch (error) {
           console.error("Error", error);

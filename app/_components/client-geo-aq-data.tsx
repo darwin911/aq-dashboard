@@ -26,8 +26,8 @@ export default function ClientGeoAQDAta() {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async function (position) {
-          const latitude = position.coords.latitude.toFixed(4);
-          const longitude = position.coords.longitude.toFixed(4);
+          const latitude = position.coords.latitude.toFixed(3);
+          const longitude = position.coords.longitude.toFixed(3);
           setCoords({ lat: latitude, long: longitude });
 
           const aqData = await getAQ({
@@ -47,16 +47,38 @@ export default function ClientGeoAQDAta() {
   }, [getAQ]);
 
   return (
-    <div>
-      <p>Latitude: {coords?.lat}</p>
-      <p>Longitude: {coords?.long}</p>
-      <p>City: {(airQualityData && airQualityData["city"]) ?? "N/A"}</p>
-      <p>Location: {(airQualityData && airQualityData["location"]) ?? "N/A"}</p>
-      <p>Country: {(airQualityData && airQualityData["country"]) ?? "N/A"}</p>
-      {airQualityData ? (
+    <div className="space-y-2">
+      <div className="flex items-center gap-4">
         <p>
-          AQI: {airQualityData["value"]} {airQualityData["unit"]}
+          <strong>Latitude</strong>: {coords?.lat}
         </p>
+        <p>
+          <strong>Longitude</strong>: {coords?.long}
+        </p>
+      </div>
+      <p>
+        <strong>City</strong>:{" "}
+        {(airQualityData && airQualityData["city"]) ?? "N/A"}
+      </p>
+      <p>
+        <strong>Location</strong>:{" "}
+        {(airQualityData && airQualityData["location"]) ?? "N/A"}
+      </p>
+      <p>
+        <strong>Country</strong>:{" "}
+        {(airQualityData && airQualityData["country"]) ?? "N/A"}
+      </p>
+      {airQualityData ? (
+        <section>
+          <p>
+            <strong>Air Quality Index</strong>: {airQualityData["aqIndex"]}
+          </p>
+          {airQualityData["ip"] ? (
+            <p>
+              <strong>IP: {airQualityData["ip"]}</strong>
+            </p>
+          ) : null}
+        </section>
       ) : null}
     </div>
   );
