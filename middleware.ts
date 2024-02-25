@@ -10,6 +10,8 @@ export async function middleware(request: NextRequest) {
   }
   let ip = request.headers.get("x-forwarded-for");
   //   let ip = "212.8.250.217";
+  //   let ip = "37.19.221.225"; // Houston
+  //   let ip = "185.107.56.215";
   //   let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
   let geo: geoDataType = null;
 
@@ -43,7 +45,7 @@ export async function middleware(request: NextRequest) {
 
   const [geoLat, geoLong] = geo["loc"].split(",");
 
-  const openaqURL = `https://api.openaq.org/v2/measurements?limit=300&page=1&offset=0&sort=desc&coordinates=${Number(
+  const openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${Number(
     geoLat
   ).toFixed(3)}%2C${Number(geoLong).toFixed(3)}`;
 
@@ -62,6 +64,10 @@ export async function middleware(request: NextRequest) {
   }
 
   const cleanResults = aqData.results.filter((result) => result.value > 0);
+
+  console.log("Results:", aqData.results.length);
+  console.log(aqData.results.map((r) => r.value));
+  console.log("Clean:", cleanResults.length);
 
   if (cleanResults.length) {
     let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
