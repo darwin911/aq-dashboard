@@ -8,13 +8,24 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      colors: {
+        good: "#00e400",
+        moderate: "#ffff00",
+        "unhealthy-for-sensitive-groups": "#ff7e00",
+        unhealthy: "#ff0000",
+        "very-unhealthy": "#8f3f97",
+        hazardous: "#7e0023",
       },
     },
   },
   plugins: [],
+  safelist: [
+    "bg-good",
+    "bg-moderate",
+    "bg-unhealthy-for-sensitive-groups",
+    "bg-unhealthy",
+    "bg-very-unhealthy",
+    "bg-hazardous",
+  ],
 };
 export default config;
