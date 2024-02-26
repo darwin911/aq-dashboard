@@ -1,5 +1,5 @@
 import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
-import { MeasurementsResponse, geoDataType } from "@/lib/types";
+import { AQIndexType, MeasurementsResponse, geoDataType } from "@/lib/types";
 import { getNO2orSO2, getO3Index, getPM10, getPM25orUM100 } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -22,7 +22,9 @@ export async function middleware(request: NextRequest) {
   console.debug({ ip });
 
   if (ip && ip !== "::1") {
-    const res = await fetch(`http://ipinfo.io/${ip}/json`);
+    const res = await fetch(
+      `http://ipinfo.io/${ip}/json?token=${process.env.IPINFO_TOKEN}`
+    );
     if (!res.ok) {
       throw new Error(
         "Something went wrong when fetching ip geolocation data."
@@ -42,6 +44,11 @@ export async function middleware(request: NextRequest) {
   let search = new URLSearchParams(geo);
 
   search.delete("readme");
+  search.delete("hostname");
+  search.delete("postal");
+  search.delete("timezone");
+  search.delete("org");
+  search.delete("region");
 
   const [geoLat, geoLong] = geo["loc"].split(",");
 
@@ -49,13 +56,13 @@ export async function middleware(request: NextRequest) {
     geoLat
   ).toFixed(3)}%2C${Number(geoLong).toFixed(3)}`;
 
-  console.log({ openaqURL });
-
   const openaqResponse = await fetch(openaqURL, {
     headers: { "Content-Type": "application/json" },
   });
 
   const aqData: MeasurementsResponse = await openaqResponse.json();
+
+  console.log({ openaqURL });
 
   if (!openaqResponse.ok) {
     return NextResponse.json({
@@ -63,36 +70,27 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  const cleanResults = aqData.results.filter((result) => result.value > 0);
+  const cleanResults = aqData.results.filter((result) => result.value >= 0);
 
   console.log("Results:", aqData.results.length);
-  console.log(aqData.results.map((r) => r.value));
   console.log("Clean:", cleanResults.length);
 
   if (cleanResults.length) {
-    let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
-
+    let AQIndex: AQIndexType = "N/A";
     const latestMeasurement = cleanResults[0];
-
     console.log({ latestMeasurement });
 
     switch (latestMeasurement.parameter) {
       case PARAMETERS.O3:
         AQIndex = getO3Index(cleanResults);
-
       case PARAMETERS.PM25:
       case PARAMETERS.UM100:
         AQIndex = getPM25orUM100(cleanResults);
-
       case PARAMETERS.PM10:
         AQIndex = getPM10(cleanResults);
-
       case PARAMETERS.NO2:
       case PARAMETERS.SO2:
         AQIndex = getNO2orSO2(cleanResults);
-
-      default:
-        break;
     }
 
     if (AQIndex === "N/A") {
@@ -100,6 +98,7 @@ export async function middleware(request: NextRequest) {
     }
 
     search.append("aqi", AQIndex);
+    search.append("stationName", latestMeasurement.location);
 
     return NextResponse.redirect(
       new URL(`?${new URLSearchParams(search).toString()}`, request.url)

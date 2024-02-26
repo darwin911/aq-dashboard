@@ -1,5 +1,11 @@
+import { ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { AQ_INDEX } from "@/lib/shared";
 import { MeasurementsResponse } from "@/lib/types";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export function getO3Index(data: MeasurementsResponse["results"]) {
   const avgLastEightHour =

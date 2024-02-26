@@ -1,3 +1,5 @@
+import { AQ_INDEX } from "@/lib/shared";
+
 export type MeasurementsResponse = {
   meta: { name: string };
   results: {
@@ -29,3 +31,5 @@ export type geoDataType = {
   timezone: string;
   readme: string;
 } | null;
+
+export type AQIndexType = (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A";
