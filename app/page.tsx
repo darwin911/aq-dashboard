@@ -53,10 +53,15 @@ export default async function Page({
         Air Quality Dashboard
       </h1>
 
-      <Search />
+      {/* <Search /> */}
       {aqi && aqi !== "N/A" ? (
         <>
-          {isYesterday && <p className="my-2">Yesterday</p>}
+          <div className="flex itmes-center justify-between my-2 w-full max-w-sm">
+            <p className="text-sm font-semibold bg-slate-200 rounded p-2">
+              {isYesterday ? "Yesterday" : "Latest"} AQI Reading
+            </p>
+            <Link href="/">Reload</Link>
+          </div>
 
           <div className="flex items-center gap-2 my-4">
             <p className="text-2xl font-normal">AQI:</p>

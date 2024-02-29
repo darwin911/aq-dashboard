@@ -62,14 +62,11 @@ export async function middleware(request: NextRequest) {
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
 
-    // Set time to the beginning of the day (00:00:00)
-    yesterday.setHours(0, 0, 0, 0);
-
-    // Set today's time to the end of the day (23:59:59)
-    today.setHours(23, 59, 59, 999);
-
+    yesterday.setUTCHours(0, 0, 0, 0);
     const dateFrom = yesterday.toISOString();
-    const dateTo = today.toISOString();
+
+    yesterday.setUTCHours(23, 59, 59, 999);
+    const dateTo = yesterday.toISOString();
 
     openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${Number(
       geoLat
@@ -122,7 +119,7 @@ export async function middleware(request: NextRequest) {
     search.append("aqi", AQIndex);
     search.append("stationName", latestMeasurement.location);
 
-    console.debug("BEFORE Redirect", request.url, request.nextUrl);
+    console.debug("\nLast Measurement date:", latestMeasurement.date, "\n");
 
     if (request.nextUrl.pathname === "/yesterday") {
       search.append("yesterday", String(true));
