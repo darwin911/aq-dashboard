@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         aqi: AQIndex,
-        station: latestMeasurement.location,
+        city: latestMeasurement.location,
         country: latestMeasurement.country,
       });
     }

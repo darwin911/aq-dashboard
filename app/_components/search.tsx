@@ -27,7 +27,7 @@ async function searchAQI(formData: FormData) {
 export default function Search() {
   return (
     <form
-      className="py-2 w-full flex items-center gap-1 mb-4"
+      className="container max-w-lg py-2 w-full flex items-center gap-1 mb-4"
       action={searchAQI}
     >
       <Input type="search" placeholder="Enter a city" name="city" disabled />

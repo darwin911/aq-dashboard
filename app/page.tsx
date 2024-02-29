@@ -16,6 +16,7 @@ export default async function Page({
   const loc = searchParams["loc"];
   const country = searchParams["country"];
   const ip = searchParams["ip"];
+  const isYesterday = searchParams["yesterday"];
   const stationName = searchParams["stationName"];
   let lat, lon;
 
@@ -55,7 +56,9 @@ export default async function Page({
       <Search />
       {aqi && aqi !== "N/A" ? (
         <>
-          <div className="flex items-center gap-2">
+          {isYesterday && <p className="my-2">Yesterday</p>}
+
+          <div className="flex items-center gap-2 my-4">
             <p className="text-2xl font-normal">AQI:</p>
             <span
               className={clsx(
@@ -94,6 +97,34 @@ export default async function Page({
                 <strong>Station</strong>: {stationName}
               </p>
             )}
+          </div>
+          <div className="max-w-md">
+            {!isYesterday && (
+              <div className="mt-4">
+                <p>
+                  If you would like to look at the <em>yesterday&apos;s</em> Air
+                  Quality click{" "}
+                  <Link
+                    href="/yesterday"
+                    className="underline text-blue-800 font-semibold"
+                  >
+                    here
+                  </Link>
+                </p>
+              </div>
+            )}
+            <div className="mt-4">
+              <p>
+                This result is based on your IP. Alternatively, you can try to
+                search AQI based on your browser location{" "}
+                <Link
+                  href="/client"
+                  className="underline text-blue-800 font-semibold"
+                >
+                  here
+                </Link>
+              </p>
+            </div>
           </div>
         </>
       ) : (

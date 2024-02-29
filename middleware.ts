@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
   //   let ip = "212.8.250.217";
   //   let ip = "37.19.221.225"; // Houston
   //   let ip = "185.107.56.215";
-  //   let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
+  // let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
   //   let ip = "212.8.243.130"; // Rotterdam
   let geo: geoDataType = null;
 
@@ -53,9 +53,30 @@ export async function middleware(request: NextRequest) {
 
   const [geoLat, geoLong] = geo["loc"].split(",");
 
-  const openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${Number(
+  let openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${Number(
     geoLat
   ).toFixed(3)}%2C${Number(geoLong).toFixed(3)}`;
+
+  if (request.nextUrl.pathname === "/yesterday") {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    // Set time to the beginning of the day (00:00:00)
+    yesterday.setHours(0, 0, 0, 0);
+
+    // Set today's time to the end of the day (23:59:59)
+    today.setHours(23, 59, 59, 999);
+
+    const dateFrom = yesterday.toISOString();
+    const dateTo = today.toISOString();
+
+    openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${Number(
+      geoLat
+    ).toFixed(3)}%2C${Number(geoLong).toFixed(
+      3
+    )}&date_from=${dateFrom}&date_to=${dateTo}`;
+  }
 
   const openaqResponse = await fetch(openaqURL, {
     headers: { "Content-Type": "application/json" },
@@ -101,8 +122,17 @@ export async function middleware(request: NextRequest) {
     search.append("aqi", AQIndex);
     search.append("stationName", latestMeasurement.location);
 
+    console.debug("BEFORE Redirect", request.url, request.nextUrl);
+
+    if (request.nextUrl.pathname === "/yesterday") {
+      search.append("yesterday", String(true));
+    }
+
     return NextResponse.redirect(
-      new URL(`?${new URLSearchParams(search).toString()}`, request.url)
+      new URL(
+        `?${new URLSearchParams(search).toString()}`,
+        request.nextUrl.origin
+      )
     );
   }
 
@@ -112,5 +142,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/",
+  matcher: ["/", "/yesterday"],
 };
