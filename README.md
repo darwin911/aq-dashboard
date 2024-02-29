@@ -2,7 +2,20 @@
 
 ## Getting Started
 
-First, run the development server:
+Install Dependencies
+
+```bash
+yarn install
+```
+
+There are some Environmental Variables that may be required to run the application correctly.
+
+```bash
+IPINFO_TOKEN=<token>
+URL=<url>
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
