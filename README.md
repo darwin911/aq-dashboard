@@ -35,3 +35,17 @@ Bonus
 Display AQI information for one day prior and one day in the future.
 The user could have the ability to enter another location from which to fetch AQI information.
 Code can be placed in a public GitHub or shared via ZIP, ensure the node_modules is not included
+
+## Summary
+
+- Deployed/Live version: <https://aq-dashboard.netlify.app/>
+
+Currently the base route / landing page utilizes the request information to gather the user's location based on their IP. With their IP data we can also obtain ther geo data, specifically their latitude and longitude (approximate). These coordinates are then passed in as query parameters to the OpenAQ API endpoint to fetch measurement data near to those coordinates.
+
+Once we receive data, we then process it to obtain an Air Quality Index. The index is calculated based on <https://www.airnow.gov/sites/default/files/2020-05/aqi-technical-assistance-document-sept2018.pdf>
+
+Furthermore, there is a link for the user to fetch and view their AQI data for yesterday. Additionally, there is a client side browser-based location request that can be found on the `/client` route.
+
+### Disclaimer
+
+This is not a perfect application and there are limitations and edge-cases since this was developed on my free time, with a limited scope. Feel free to share comments and suggestions. Thank you for reading.
