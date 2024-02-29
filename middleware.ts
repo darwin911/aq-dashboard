@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
   //   let ip = "37.19.221.225"; // Houston
   //   let ip = "185.107.56.215";
   //   let ip = "2601:46:57f:3b50:e010:430:ce0c:1954";
+  //   let ip = "212.8.243.130"; // Rotterdam
   let geo: geoDataType = null;
 
   if (ip && ip.split(",")[0] !== "::1") {

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 import { unstable_noStore } from "next/cache";
 import { AQ_INDEX, PARAMETERS } from "@/lib/shared";
-import { MeasurementsResponse, geoDataType } from "@/lib/types";
+import { AQIndexType, MeasurementsResponse, geoDataType } from "@/lib/types";
 import { getNO2orSO2, getO3Index, getPM10, getPM25orUM100 } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -12,134 +12,73 @@ export async function GET(request: NextRequest) {
   unstable_noStore();
   console.log("\n** GET /aq Running **\n");
 
-  let ip = request.headers.get("x-forwarded-for");
-  let geo: geoDataType = null;
+  const searchParams = new URL(request.url).searchParams;
 
-  if (ip && ip.split(",")[0] !== "::1") {
-    ip = ip.split(",")[0];
-  }
+  const lat = searchParams.get("lat") ?? "";
+  const lon = searchParams.get("lon") ?? "";
 
-  console.log({ ip });
+  console.log(searchParams);
+  console.log({ lat, lon });
 
-  if (ip && ip !== "::1") {
-    const res = await fetch(`http://ipinfo.io/${ip}/json`);
-    if (!res.ok) {
-      throw new Error(
-        "Something went wrong when fetching ip geolocation data."
-      );
-    }
+  const openaqURL = `https://api.openaq.org/v2/measurements?limit=1000&page=1&offset=0&sort=desc&radius=20000&coordinates=${lat}%2C${lon}`;
 
-    const data = await res.json();
-    console.log("\nGeo:", data, "\n");
-    geo = data;
-  }
-
-  console.log("\nGeo", geo, "\n");
-
-  const params = new URL(request.url).searchParams;
-  let lat = params.get("lat");
-  let lon = params.get("long");
-
-  if (lat) {
-    lat = Number(lat).toFixed(3);
-  }
-
-  if (lon) {
-    lon = Number(lon).toFixed(3);
-  }
-
-  if (!lat || !lon) {
-    throw new Error("Latitude and Longitude are required to fetch Air Quality");
-  }
-
-  const baseUrl = "https://api.openaq.org/v2";
-
-  const airQualityUrl = `${baseUrl}/measurements?&limit=24&page=1&offset=0&sort=desc&coordinates=${lat}%2C${lon}&radius=10000&order_by=datetime`;
-
-  console.log({ airQualityUrl });
+  console.log({ openaqURL });
 
   try {
-    const aqRes = await fetch(airQualityUrl, {
+    const openaqResponse = await fetch(openaqURL, {
       headers: { "Content-Type": "application/json" },
     });
 
-    if (!aqRes.ok) {
+    if (!openaqResponse.ok) {
       return NextResponse.json({
         message: "Failed to find AQ Data. Response NOT OK",
       });
     }
 
-    const data: MeasurementsResponse = await aqRes.json();
+    const aqData: MeasurementsResponse = await openaqResponse.json();
 
-    console.debug(
-      data.results.map((r) => ({
-        value: r.value,
-        unit: r.unit,
-        parameter: r.parameter,
-      }))
-    );
+    // console.debug(
+    //   aqData.results.map((r) => ({
+    //     value: r.value,
+    //     unit: r.unit,
+    //     parameter: r.parameter,
+    //   }))
+    // );
 
-    const cleanResults = data.results.filter((result) => result.value > 0);
+    const cleanResults = aqData.results.filter((result) => result.value >= 0);
 
     if (cleanResults.length) {
-      const latestMeasurement = data.results[0];
+      let AQIndex: AQIndexType = "N/A";
+      const latestMeasurement = cleanResults[0];
+      console.log({ latestMeasurement, clean: cleanResults.length });
 
-      let AQIndex: (typeof AQ_INDEX)[keyof typeof AQ_INDEX] | "N/A" = "N/A";
-
-      if (latestMeasurement.parameter === PARAMETERS.O3) {
-        AQIndex = getO3Index(cleanResults);
-      } else if (
-        latestMeasurement.parameter === PARAMETERS.PM25 ||
-        latestMeasurement.parameter === PARAMETERS.UM100
-      ) {
-        AQIndex = getPM25orUM100(cleanResults);
-      } else if (latestMeasurement.parameter === PARAMETERS.PM10) {
-        AQIndex = getPM10(cleanResults);
-      } else if (
-        latestMeasurement.parameter === PARAMETERS.NO2 ||
-        latestMeasurement.parameter === PARAMETERS.SO2
-      ) {
-        AQIndex = getNO2orSO2(cleanResults);
+      switch (latestMeasurement.parameter) {
+        case PARAMETERS.O3:
+          AQIndex = getO3Index(cleanResults);
+        case PARAMETERS.PM25:
+        case PARAMETERS.UM100:
+          console.log("evaluating pm25");
+          AQIndex = getPM25orUM100(cleanResults);
+        case PARAMETERS.PM10:
+          AQIndex = getPM10(cleanResults);
+        case PARAMETERS.NO2:
+        case PARAMETERS.SO2:
+          AQIndex = getNO2orSO2(cleanResults);
       }
 
-      const locationId = latestMeasurement.locationId;
+      console.log({ AQIndex });
 
-      if (locationId) {
-        try {
-          const locationResponse = await fetch(
-            `https://api.openaq.org/v2/locations/${locationId}`,
-            { headers: { "Content-Type": "application/json" } }
-          );
-
-          if (!locationResponse.ok) {
-            return NextResponse.json({
-              message: "Failed to find AQ Data. LOCATION Response NOT OK",
-            });
-          }
-
-          const locationData: {
-            results: {
-              id: number;
-              city: string;
-              country: string;
-            }[];
-          } = await locationResponse.json();
-
-          const cityLocation = locationData.results[0].city;
-
-          return NextResponse.json({
-            ...latestMeasurement,
-            city: cityLocation ?? "N/A",
-            aqIndex: AQIndex,
-            ip: ip,
-            geo: { lat, long: lon },
-          });
-        } catch (error) {
-          console.error("Error", error);
-        }
+      if (AQIndex === "N/A") {
+        return NextResponse.json({
+          message: "Failed to find AQ Data",
+        });
       }
 
-      return NextResponse.json(latestMeasurement);
+      return NextResponse.json({
+        aqi: AQIndex,
+        station: latestMeasurement.location,
+        country: latestMeasurement.country,
+      });
     }
 
     return NextResponse.json({ message: "Air Quality data not found" });

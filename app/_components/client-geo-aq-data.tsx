@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useState } from "react";
 
 export default function ClientGeoAQDAta() {
-  const [coords, setCoords] = useState<null | { lat: string; long: string }>();
+  const [coords, setCoords] = useState<null | { lat: string; lon: string }>();
   const [airQualityData, setAirQualityData] = useState<null | any>(null);
 
   const getAQ = useCallback(
     async ({ lat, lon }: { lat: string; lon: string }) => {
-      const aqRes = await fetch(`/api/aq/?lat=${lat}&long=${lon}`, {
+      const aqRes = await fetch(`/api/aq/?lat=${lat}&lon=${lon}`, {
         headers: { "Content-Type": "application/json" },
       });
 
@@ -28,12 +28,14 @@ export default function ClientGeoAQDAta() {
         async function (position) {
           const latitude = position.coords.latitude.toFixed(3);
           const longitude = position.coords.longitude.toFixed(3);
-          setCoords({ lat: latitude, long: longitude });
+          setCoords({ lat: latitude, lon: longitude });
 
           const aqData = await getAQ({
             lat: latitude,
             lon: longitude,
           });
+
+          console.log({ aqData });
 
           setAirQualityData(aqData);
         },
@@ -53,16 +55,12 @@ export default function ClientGeoAQDAta() {
           <strong>Latitude</strong>: {coords?.lat}
         </p>
         <p>
-          <strong>Longitude</strong>: {coords?.long}
+          <strong>Longitude</strong>: {coords?.lon}
         </p>
       </div>
       <p>
-        <strong>City</strong>:{" "}
+        <strong>City/Location</strong>:{" "}
         {(airQualityData && airQualityData["city"]) ?? "N/A"}
-      </p>
-      <p>
-        <strong>Location</strong>:{" "}
-        {(airQualityData && airQualityData["location"]) ?? "N/A"}
       </p>
       <p>
         <strong>Country</strong>:{" "}
@@ -71,13 +69,8 @@ export default function ClientGeoAQDAta() {
       {airQualityData ? (
         <section>
           <p>
-            <strong>Air Quality Index</strong>: {airQualityData["aqIndex"]}
+            <strong>Air Quality Index</strong>: {airQualityData["aqi"]}
           </p>
-          {airQualityData["ip"] ? (
-            <p>
-              <strong>IP: {airQualityData["ip"]}</strong>
-            </p>
-          ) : null}
         </section>
       ) : null}
     </div>

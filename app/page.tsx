@@ -1,11 +1,11 @@
+import Search from "@/app/_components/search";
 import { AQIndexType } from "@/lib/types";
 import clsx from "clsx";
-import { getCountry } from "iso-3166-1-alpha-2";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page({
-  params,
   searchParams,
 }: {
   params: { slug: string };
@@ -23,12 +23,17 @@ export default async function Page({
     [lat, lon] = loc.split(",");
   }
 
-  const aqi = searchParams["aqi"] as AQIndexType;
+  const aqi = (searchParams["aqi"] as AQIndexType) ?? "N/A";
   // const aqi: AQIndexType = "Moderate";
 
   function getAQIStyle() {
-    const badgeColor = `bg-${aqi.toLowerCase().replace(/ (?! )/g, "-")}`;
     let textColor = "text-inherit";
+
+    if (aqi === "N/A") {
+      return { badgeColor: "bg-inherit", textColor };
+    }
+
+    const badgeColor = `bg-${aqi.toLowerCase().replace(/ (?! )/g, "-")}`;
 
     switch (aqi) {
       case "Hazardous":
@@ -42,44 +47,69 @@ export default async function Page({
   const { textColor, badgeColor } = getAQIStyle();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 tracking-tighter">
-      <h1 className="text-4xl font-bold mb-5">Air Quality Dashboard</h1>
-      <a href="/">Reset</a>
+    <>
+      <h1 className="text-2xl md:text-4xl font-bold mb-5">
+        Air Quality Dashboard
+      </h1>
 
-      <p>Latest Reading</p>
-      <div
-        className={clsx(
-          badgeColor,
-          "p-4 rounded-lg flex items-center justify-center border-black"
-        )}
-      >
-        {aqi && <span className={clsx(textColor, "font-semibold")}>{aqi}</span>}
-      </div>
+      <Search />
+      {aqi && aqi !== "N/A" ? (
+        <>
+          <div className="flex items-center gap-2">
+            <p className="text-2xl font-normal">AQI:</p>
+            <span
+              className={clsx(
+                textColor,
+                badgeColor,
+                "font-semibold",
+                "p-3 rounded-lg flex items-center justify-center"
+              )}
+            >
+              {aqi}
+            </span>
+          </div>
 
-      <div>
-        <p>
-          <strong>Latitude</strong>: {lat}
-        </p>
-        <p>
-          <strong>Longitude</strong>: {lon}
-        </p>
-        {city && (
+          <div className="space-y-2">
+            <div className="flex gap-2 items-center">
+              <p>
+                <strong>Latitude</strong>: {lat}
+              </p>
+              <p>
+                <strong>Longitude</strong>: {lon}
+              </p>
+            </div>
+            <div className="flex gap-0 items-center">
+              {city && (
+                <p className="flex-1">
+                  <strong>City</strong>: {city}
+                </p>
+              )}
+              <p className="flex-1">
+                <strong>Country</strong>: {country}
+              </p>
+            </div>
+
+            {stationName && (
+              <p>
+                <strong>Station</strong>: {stationName}
+              </p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div>
           <p>
-            <strong>City</strong>: {city}
+            Sorry, we were not able to find your location based on your IP. Try
+            using browser location{" "}
+            <Link
+              href="/client"
+              className="underline text-blue-800 font-semibold"
+            >
+              here
+            </Link>
           </p>
-        )}
-        <p>
-          <strong>Country</strong>: {country}
-        </p>
-        <p>
-          <strong>IP</strong>: {ip}
-        </p>
-        {stationName && (
-          <p>
-            <strong>Station</strong>: {stationName}
-          </p>
-        )}
-      </div>
-    </main>
+        </div>
+      )}
+    </>
   );
 }
